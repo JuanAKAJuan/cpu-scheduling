@@ -109,3 +109,33 @@ bool readProcesses(const std::string& fileName, std::vector<Process>& processes)
 	std::cout << "Read " << processes.size() << " process from " << fileName << "." << std::endl;
 	return true;
 }
+
+void printStatistics(int completedCount, double totalElapsedTime, double totalBurstTime, double totalWaitingTime,
+					 double totalTurnaroundTime, double totalResponseTime) {
+	if (completedCount == 0) {
+		std::cout << "\nNo processes completed." << std::endl;
+		return;
+	}
+
+	double throughput = (totalElapsedTime > 0) ? (static_cast<double>(completedCount) / totalElapsedTime) : 0;
+	double cpuUtilization = totalWaitingTime / completedCount;
+	double avgWaitingTime = totalWaitingTime / completedCount;
+	double avgTurnaroundTime = totalTurnaroundTime / completedCount;
+	double avgResponseTime = totalResponseTime / completedCount;
+
+	std::cout << "\n--- Simulation Statistics ---" << std::endl;
+	std::cout << "Number of processes executed: " << completedCount << std::endl;
+	std::cout << std::fixed << std::setprecision(2); // Format output
+	std::cout << "Total elapsed time: " << totalElapsedTime << " units" << std::endl;
+	std::cout << std::fixed << std::setprecision(4);
+	std::cout << "Throughput: " << throughput << " processes/unit time" << std::endl;
+	std::cout << std::fixed << std::setprecision(2);
+	std::cout << "CPU utilization: " << cpuUtilization << "%" << std::endl;
+	std::cout << "Average waiting time: " << avgWaitingTime << " units" << std::endl;
+	std::cout << "Average turnaround time: " << avgTurnaroundTime << " units" << std::endl;
+	std::cout << "Average response time: " << avgResponseTime << " units" << std::endl;
+}
+
+void simulateFIFO(std::vector<Process>& processes) {}
+
+void simulateSJF(std::vector<Process>& processes) {}
