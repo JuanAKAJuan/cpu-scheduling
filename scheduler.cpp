@@ -12,48 +12,48 @@ const int NUM_PROCESSES = 500;
 
 struct Process {
 	int id;
-	int arrivalTime;
+	int arrival_time;
 	int priority;
-	int burstTime;
+	int burst_time;
 
 	// --- Simulation Tracking ---
-	int startTime = -1;
-	int completionTime = -1;
-	int waitingTime = 0;
-	int turnaroundTime = 0;
-	int responseTime = -1;
+	int start_time = -1;
+	int completion_time = -1;
+	int waiting_time = 0;
+	int turnaround_time = 0;
+	int response_time = -1;
 
 	bool operator<(const Process& other) const {
-		if (arrivalTime != other.arrivalTime) {
-			return arrivalTime < other.arrivalTime;
+		if (arrival_time != other.arrival_time) {
+			return arrival_time < other.arrival_time;
 		}
 		return id < other.id;
 	}
 };
 
-bool readProcesses(const std::string& fileName, std::vector<Process>& processes);
-void printStatistics(int completedCount, double totalElapsedTime, double totalWaitingTime, double totalTurnaroundTime,
-					 double totalResponseTime);
-void simulateFIFO(std::vector<Process>& processes);
-void simulateSJF(std::vector<Process>& processes);
+bool read_processes(const std::string& file_name, std::vector<Process>& processes);
+void print_statistics(int completed_count, double total_elapsed_time, double total_waiting_time,
+					  double total_turnaround_time, double total_response_time);
+void simulate_fifo(std::vector<Process>& processes);
+void simulate_sjf(std::vector<Process>& processes);
 
 int main() {
-	std::vector<Process> allProcesses;
-	std::string fileName = "datafile1.txt";
+	std::vector<Process> all_processes;
+	std::string file_name = "datafile1.txt";
 
-	if (!readProcesses(fileName, allProcesses)) {
+	if (!read_processes(file_name, all_processes)) {
 		return 1;
 	}
 
-	if (allProcesses.size() < NUM_PROCESSES) {
+	if (all_processes.size() < NUM_PROCESSES) {
 		std::cerr << "ERROR: Input file contains fewer than " << NUM_PROCESSES << " processes." << std::endl;
 		return 1;
 	}
 
-	allProcesses.resize(NUM_PROCESSES);
+	all_processes.resize(NUM_PROCESSES);
 
 	// Sort all processes by arrival time initially.
-	std::sort(allProcesses.begin(), allProcesses.end());
+	std::sort(all_processes.begin(), all_processes.end());
 
 	int choice;
 	std::cout << "Select Scheduling Algorithm:" << std::endl;
@@ -62,16 +62,16 @@ int main() {
 	std::cout << "Enter choice (1 or 2): ";
 	std::cin >> choice;
 
-	std::vector<Process> simulationProcesses = allProcesses;
+	std::vector<Process> simulation_processes = all_processes;
 
 	switch (choice) {
 		case 1:
 			std::cout << "\n--- Running FIFO Simulation ---" << std::endl;
-			simulateFIFO(simulationProcesses);
+			simulate_fifo(simulation_processes);
 			break;
 		case 2:
 			std::cout << "\n--- Running SJF (Non-Preemptive) Simulation ---" << std::endl;
-			simulateSJF(simulationProcesses);
+			simulate_sjf(simulation_processes);
 			break;
 		default:
 			std::cerr << "Invalid choice." << std::endl;
@@ -81,21 +81,21 @@ int main() {
 	return 0;
 }
 
-bool readProcesses(const std::string& fileName, std::vector<Process>& processes) {
-	std::ifstream inFile(fileName);
-	if (!inFile) {
-		std::cerr << "ERROR: Cannot open file: " << fileName << std::endl;
+bool read_processes(const std::string& file_name, std::vector<Process>& processes) {
+	std::ifstream in_file(file_name);
+	if (!in_file) {
+		std::cerr << "ERROR: Cannot open file: " << file_name << std::endl;
 		return false;
 	}
 
 	std::string line;
-	while (std::getline(inFile, line)) {
+	while (std::getline(in_file, line)) {
 		std::stringstream ss(line);
 		Process p;
-		if (ss >> p.id >> p.arrivalTime >> p.priority >> p.burstTime) {
-			if (p.arrivalTime < 0 || p.burstTime <= 0) {
-				std::cerr << "WARNING: Skipping invalid process data (ID: " << p.id << ", Arrival: " << p.arrivalTime
-						  << ", Burst: " << p.burstTime << ")" << std::endl;
+		if (ss >> p.id >> p.arrival_time >> p.priority >> p.burst_time) {
+			if (p.arrival_time < 0 || p.burst_time <= 0) {
+				std::cerr << "WARNING: Skipping invalid process data (ID: " << p.id << ", Arrival: " << p.arrival_time
+						  << ", Burst: " << p.burst_time << ")" << std::endl;
 				continue;
 			}
 
@@ -105,220 +105,222 @@ bool readProcesses(const std::string& fileName, std::vector<Process>& processes)
 		}
 	}
 
-	inFile.close();
-	std::cout << "Read " << processes.size() << " process from " << fileName << "." << std::endl;
+	in_file.close();
+	std::cout << "Read " << processes.size() << " process from " << file_name << "." << std::endl;
 	return true;
 }
 
-void printStatistics(int completedCount, double totalElapsedTime, double totalWaitingTime, double totalTurnaroundTime,
-					 double totalResponseTime) {
-	if (completedCount == 0) {
+void print_statistics(int completed_count, double total_elapsed_time, double total_waiting_time,
+					  double total_turnaround_time, double total_response_time) {
+	if (completed_count == 0) {
 		std::cout << "\nNo processes completed." << std::endl;
 		return;
 	}
 
-	double throughput = (totalElapsedTime > 0) ? (static_cast<double>(completedCount) / totalElapsedTime) : 0;
-	double cpuUtilization = totalWaitingTime / completedCount;
-	double avgWaitingTime = totalWaitingTime / completedCount;
-	double avgTurnaroundTime = totalTurnaroundTime / completedCount;
-	double avgResponseTime = totalResponseTime / completedCount;
+	double throughput = (total_elapsed_time > 0) ? (static_cast<double>(completed_count) / total_elapsed_time) : 0;
+	double cpu_utilization = total_waiting_time / completed_count;
+	double avg_waiting_time = total_waiting_time / completed_count;
+	double avg_turnaround_time = total_turnaround_time / completed_count;
+	double avg_response_time = total_response_time / completed_count;
 
 	std::cout << "\n--- Simulation Statistics ---" << std::endl;
-	std::cout << "Number of processes executed: " << completedCount << std::endl;
+	std::cout << "Number of processes executed: " << completed_count << std::endl;
 	std::cout << std::fixed << std::setprecision(2);
-	std::cout << "Total elapsed time: " << totalElapsedTime << " units" << std::endl;
+	std::cout << "Total elapsed time: " << total_elapsed_time << " units" << std::endl;
 	std::cout << std::fixed << std::setprecision(4);
 	std::cout << "Throughput: " << throughput << " processes/unit time" << std::endl;
 	std::cout << std::fixed << std::setprecision(2);
-	std::cout << "CPU utilization: " << cpuUtilization << "%" << std::endl;
-	std::cout << "Average waiting time: " << avgWaitingTime << " units" << std::endl;
-	std::cout << "Average turnaround time: " << avgTurnaroundTime << " units" << std::endl;
-	std::cout << "Average response time: " << avgResponseTime << " units" << std::endl;
+	std::cout << "CPU utilization: " << cpu_utilization << "%" << std::endl;
+	std::cout << "Average waiting time: " << avg_waiting_time << " units" << std::endl;
+	std::cout << "Average turnaround time: " << avg_turnaround_time << " units" << std::endl;
+	std::cout << "Average response time: " << avg_response_time << " units" << std::endl;
 }
 
-void simulateFIFO(std::vector<Process>& processes) {
-	std::queue<int> readyQueue;
-	int currentTime = 0;
-	int completedCount = 0;
-	size_t nextArrivalIndex = 0;
-	int currentProcessIndex = -1;
-	int cpuBusyUntil = 0;
+void simulate_fifo(std::vector<Process>& processes) {
+	std::queue<int> ready_queue;
+	int current_time = 0;
+	int completed_count = 0;
+	size_t next_arrival_index = 0;
+	int current_process_index = -1;
+	int cpu_busy_until = 0;
 
-	double totalBurstSum = 0;
-	double totalWaitingTime = 0;
-	double totalTurnaroundTime = 0;
-	double totalResponseTime = 0;
+	double total_burst_sum = 0;
+	double total_waiting_time = 0;
+	double total_turnaround_time = 0;
+	double total_response_time = 0;
 
 	// Pre-calculate total burst time.
 	for (const auto& p : processes) {
-		totalBurstSum += p.burstTime;
+		total_burst_sum += p.burst_time;
 	}
 
-	while (completedCount < NUM_PROCESSES) {
-		while (nextArrivalIndex < processes.size() && processes[nextArrivalIndex].arrivalTime <= currentTime) {
-			readyQueue.push(nextArrivalIndex);
-			nextArrivalIndex++;
+	while (completed_count < NUM_PROCESSES) {
+		while (next_arrival_index < processes.size() && processes[next_arrival_index].arrival_time <= current_time) {
+			ready_queue.push(next_arrival_index);
+			next_arrival_index++;
 		}
-		if (currentProcessIndex != -1 && currentTime >= cpuBusyUntil) {
+		if (current_process_index != -1 && current_time >= cpu_busy_until) {
 			// Process completion
-			Process& p = processes[currentProcessIndex];
-			p.completionTime = currentTime;
-			p.turnaroundTime = p.completionTime - p.arrivalTime;
+			Process& p = processes[current_process_index];
+			p.completion_time = current_time;
+			p.turnaround_time = p.completion_time - p.arrival_time;
 
-			totalTurnaroundTime += p.turnaroundTime;
-			totalWaitingTime += p.waitingTime;
-			totalResponseTime += p.responseTime;
+			total_turnaround_time += p.turnaround_time;
+			total_waiting_time += p.waiting_time;
+			total_response_time += p.response_time;
 
-			completedCount++;
-			currentProcessIndex = -1;
+			completed_count++;
+			current_process_index = -1;
 		}
 
-		if (currentProcessIndex == -1 && !readyQueue.empty()) {
-			currentProcessIndex = readyQueue.front();
-			readyQueue.pop();
+		if (current_process_index == -1 && !ready_queue.empty()) {
+			current_process_index = ready_queue.front();
+			ready_queue.pop();
 
-			Process& p = processes[currentProcessIndex];
+			Process& p = processes[current_process_index];
 
-			if (p.startTime == -1) {
-				p.startTime = currentTime;
-				p.responseTime = p.startTime - p.arrivalTime;
+			if (p.start_time == -1) {
+				p.start_time = current_time;
+				p.response_time = p.start_time - p.arrival_time;
 			}
-			p.waitingTime = currentTime - p.arrivalTime;
+			p.waiting_time = current_time - p.arrival_time;
 
-			cpuBusyUntil = currentTime + p.burstTime;
+			cpu_busy_until = current_time + p.burst_time;
 		}
 
-		if (completedCount == NUM_PROCESSES) {
+		if (completed_count == NUM_PROCESSES) {
 			break;
 		}
 
-		if (currentProcessIndex == -1 && readyQueue.empty()) {
-			if (nextArrivalIndex < processes.size()) {
-				if (processes[nextArrivalIndex].arrivalTime > currentTime) {
-					currentTime = processes[nextArrivalIndex].arrivalTime;
+		if (current_process_index == -1 && ready_queue.empty()) {
+			if (next_arrival_index < processes.size()) {
+				if (processes[next_arrival_index].arrival_time > current_time) {
+					current_time = processes[next_arrival_index].arrival_time;
 				} else {
-					currentTime++;
+					current_time++;
 				}
 			} else {
 				break;
 			}
 		} else {
-			int nextEventTime = std::numeric_limits<int>::max();
-			if (currentProcessIndex != -1) {
-				nextEventTime = std::min(nextEventTime, cpuBusyUntil);
+			int next_event_time = std::numeric_limits<int>::max();
+			if (current_process_index != -1) {
+				next_event_time = std::min(next_event_time, cpu_busy_until);
 			}
-			if (nextArrivalIndex < processes.size()) {
-				nextEventTime = std::min(nextEventTime, processes[nextArrivalIndex].arrivalTime);
+			if (next_arrival_index < processes.size()) {
+				next_event_time = std::min(next_event_time, processes[next_arrival_index].arrival_time);
 			}
 
-			if (nextEventTime > currentTime) {
-				currentTime = nextEventTime;
+			if (next_event_time > current_time) {
+				current_time = next_event_time;
 			} else {
-				currentTime++;
+				current_time++;
 			}
 		}
 	}
 
-	double totalElapsedTime = static_cast<double>(currentTime);
+	double total_elapsed_time = static_cast<double>(current_time);
 
-	printStatistics(completedCount, totalElapsedTime, totalWaitingTime, totalTurnaroundTime, totalResponseTime);
+	print_statistics(completed_count, total_elapsed_time, total_waiting_time, total_turnaround_time,
+					 total_response_time);
 }
 
-void simulateSJF(std::vector<Process>& processes) {
-	std::vector<int> readyQueueIndices;
+void simulate_sjf(std::vector<Process>& processes) {
+	std::vector<int> ready_queue_indices;
 
-	int currentTime = 0;
-	int completedCount = 0;
-	size_t nextArrivalIndex = 0;
-	int currentProcessIndex = -1;
-	int cpuBusyUntil = 0;
+	int current_time = 0;
+	int completed_count = 0;
+	size_t next_arrival_index = 0;
+	int current_process_index = -1;
+	int cpu_busy_until = 0;
 
-	double totalBurstSum = 0;
-	double totalWaitingTime = 0;
-	double totalTurnaroundTime = 0;
-	double totalResponseTime = 0;
+	double total_burst_sum = 0;
+	double total_waiting_time = 0;
+	double total_turnaround_time = 0;
+	double total_response_time = 0;
 
 	for (const auto& p : processes) {
-		totalBurstSum += p.burstTime;
+		total_burst_sum += p.burst_time;
 	}
 
-	while (completedCount < NUM_PROCESSES) {
-		while (nextArrivalIndex < processes.size() && processes[nextArrivalIndex].arrivalTime <= currentTime) {
-			readyQueueIndices.push_back(nextArrivalIndex);
-			nextArrivalIndex++;
+	while (completed_count < NUM_PROCESSES) {
+		while (next_arrival_index < processes.size() && processes[next_arrival_index].arrival_time <= current_time) {
+			ready_queue_indices.push_back(next_arrival_index);
+			next_arrival_index++;
 		}
 
-		if (currentProcessIndex != -1 && currentTime >= cpuBusyUntil) {
-			Process& p = processes[currentProcessIndex];
-			p.completionTime = currentTime;
-			p.turnaroundTime = p.completionTime - p.arrivalTime;
+		if (current_process_index != -1 && current_time >= cpu_busy_until) {
+			Process& p = processes[current_process_index];
+			p.completion_time = current_time;
+			p.turnaround_time = p.completion_time - p.arrival_time;
 
-			totalTurnaroundTime += p.turnaroundTime;
-			totalWaitingTime += p.waitingTime;
-			totalResponseTime += p.responseTime;
+			total_turnaround_time += p.turnaround_time;
+			total_waiting_time += p.waiting_time;
+			total_response_time += p.response_time;
 
-			completedCount++;
-			currentProcessIndex = -1;
+			completed_count++;
+			current_process_index = -1;
 		}
 
-		if (currentProcessIndex == -1 && !readyQueueIndices.empty()) {
-			auto shortestJobIt =
-				std::min_element(readyQueueIndices.begin(), readyQueueIndices.end(), [&](int idx1, int idx2) {
-					if (processes[idx1].burstTime != processes[idx2].burstTime) {
-						return processes[idx1].burstTime < processes[idx2].burstTime;
+		if (current_process_index == -1 && !ready_queue_indices.empty()) {
+			auto shortest_job_it =
+				std::min_element(ready_queue_indices.begin(), ready_queue_indices.end(), [&](int idx1, int idx2) {
+					if (processes[idx1].burst_time != processes[idx2].burst_time) {
+						return processes[idx1].burst_time < processes[idx2].burst_time;
 					}
-					if (processes[idx1].arrivalTime != processes[idx2].arrivalTime) {
-						return processes[idx1].arrivalTime < processes[idx2].arrivalTime;
+					if (processes[idx1].arrival_time != processes[idx2].arrival_time) {
+						return processes[idx1].arrival_time < processes[idx2].arrival_time;
 					}
 					return processes[idx1].id < processes[idx2].id;
 				});
 
-			currentProcessIndex = *shortestJobIt;
-			readyQueueIndices.erase(shortestJobIt);
+			current_process_index = *shortest_job_it;
+			ready_queue_indices.erase(shortest_job_it);
 
-			Process& p = processes[currentProcessIndex];
+			Process& p = processes[current_process_index];
 
-			if (p.startTime == -1) {
-				p.startTime = currentTime;
-				p.responseTime = p.startTime - p.arrivalTime;
+			if (p.start_time == -1) {
+				p.start_time = current_time;
+				p.response_time = p.start_time - p.arrival_time;
 			}
-			p.waitingTime = currentTime - p.arrivalTime;
+			p.waiting_time = current_time - p.arrival_time;
 
-			cpuBusyUntil = currentTime + p.burstTime;
+			cpu_busy_until = current_time + p.burst_time;
 		}
 
-		if (completedCount == NUM_PROCESSES) {
+		if (completed_count == NUM_PROCESSES) {
 			break;
 		}
 
-		if (currentProcessIndex == -1 && readyQueueIndices.empty()) {
-			if (nextArrivalIndex < processes.size()) {
-				if (processes[nextArrivalIndex].arrivalTime > currentTime) {
-					currentTime = processes[nextArrivalIndex].arrivalTime;
+		if (current_process_index == -1 && ready_queue_indices.empty()) {
+			if (next_arrival_index < processes.size()) {
+				if (processes[next_arrival_index].arrival_time > current_time) {
+					current_time = processes[next_arrival_index].arrival_time;
 				} else {
-					currentTime++;
+					current_time++;
 				}
 			} else {
 				break;
 			}
 		} else {
-			int nextEventTime = std::numeric_limits<int>::max();
-			if (currentProcessIndex != -1) {
-				nextEventTime = std::min(nextEventTime, cpuBusyUntil);
+			int next_event_time = std::numeric_limits<int>::max();
+			if (current_process_index != -1) {
+				next_event_time = std::min(next_event_time, cpu_busy_until);
 			}
-			if (nextArrivalIndex < processes.size()) {
-				nextEventTime = std::min(nextEventTime, processes[nextArrivalIndex].arrivalTime);
+			if (next_arrival_index < processes.size()) {
+				next_event_time = std::min(next_event_time, processes[next_arrival_index].arrival_time);
 			}
 
-			if (nextEventTime > currentTime) {
-				currentTime = nextEventTime;
+			if (next_event_time > current_time) {
+				current_time = next_event_time;
 			} else {
-				currentTime++;
+				current_time++;
 			}
 		}
 	}
 
-	double totalElapsedTime = static_cast<double>(currentTime);
+	double total_elapsed_time = static_cast<double>(current_time);
 
-	printStatistics(completedCount, totalElapsedTime, totalWaitingTime, totalTurnaroundTime, totalResponseTime);
+	print_statistics(completed_count, total_elapsed_time, total_waiting_time, total_turnaround_time,
+					 total_response_time);
 }
