@@ -32,8 +32,8 @@ struct Process {
 };
 
 bool readProcesses(const std::string& fileName, std::vector<Process>& processes);
-void printStatistics(int completedCount, double totalElapsedTime, double totalBurstTime, double totalWaitingTime,
-					 double totalTurnaroundTime, double totalResponseTime);
+void printStatistics(int completedCount, double totalElapsedTime, double totalWaitingTime, double totalTurnaroundTime,
+					 double totalResponseTime);
 void simulateFIFO(std::vector<Process>& processes);
 void simulateSJF(std::vector<Process>& processes);
 
@@ -110,8 +110,8 @@ bool readProcesses(const std::string& fileName, std::vector<Process>& processes)
 	return true;
 }
 
-void printStatistics(int completedCount, double totalElapsedTime, double totalBurstTime, double totalWaitingTime,
-					 double totalTurnaroundTime, double totalResponseTime) {
+void printStatistics(int completedCount, double totalElapsedTime, double totalWaitingTime, double totalTurnaroundTime,
+					 double totalResponseTime) {
 	if (completedCount == 0) {
 		std::cout << "\nNo processes completed." << std::endl;
 		return;
@@ -125,7 +125,7 @@ void printStatistics(int completedCount, double totalElapsedTime, double totalBu
 
 	std::cout << "\n--- Simulation Statistics ---" << std::endl;
 	std::cout << "Number of processes executed: " << completedCount << std::endl;
-	std::cout << std::fixed << std::setprecision(2); // Format output
+	std::cout << std::fixed << std::setprecision(2);
 	std::cout << "Total elapsed time: " << totalElapsedTime << " units" << std::endl;
 	std::cout << std::fixed << std::setprecision(4);
 	std::cout << "Throughput: " << throughput << " processes/unit time" << std::endl;
@@ -221,8 +221,7 @@ void simulateFIFO(std::vector<Process>& processes) {
 
 	double totalElapsedTime = static_cast<double>(currentTime);
 
-	printStatistics(completedCount, totalElapsedTime, totalBurstSum, totalWaitingTime, totalTurnaroundTime,
-					totalResponseTime);
+	printStatistics(completedCount, totalElapsedTime, totalWaitingTime, totalTurnaroundTime, totalResponseTime);
 }
 
 void simulateSJF(std::vector<Process>& processes) {
@@ -321,6 +320,5 @@ void simulateSJF(std::vector<Process>& processes) {
 
 	double totalElapsedTime = static_cast<double>(currentTime);
 
-	printStatistics(completedCount, totalElapsedTime, totalBurstSum, totalWaitingTime, totalTurnaroundTime,
-					totalResponseTime);
+	printStatistics(completedCount, totalElapsedTime, totalWaitingTime, totalTurnaroundTime, totalResponseTime);
 }
